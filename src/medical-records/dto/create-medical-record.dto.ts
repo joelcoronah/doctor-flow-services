@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsDateString,
-  IsOptional,
-  IsArray,
-  MaxLength,
-} from 'class-validator';
+import { IsString, IsDateString, IsOptional, IsArray, MaxLength } from 'class-validator';
 
 export class CreateMedicalRecordDto {
   @IsDateString()
@@ -26,4 +20,3 @@ export class CreateMedicalRecordDto {
   @IsString({ each: true })
   attachments?: string[];
 }
-

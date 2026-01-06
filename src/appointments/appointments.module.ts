@@ -12,4 +12,3 @@ import { PatientsModule } from '../patients/patients.module';
   exports: [AppointmentsService],
 })
 export class AppointmentsModule {}
-

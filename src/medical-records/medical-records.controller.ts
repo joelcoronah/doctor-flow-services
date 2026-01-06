@@ -47,4 +47,3 @@ export class MedicalRecordsController {
     return this.medicalRecordsService.remove(id);
   }
 }
-

@@ -79,10 +79,7 @@ export class NotificationsService {
    * Mark all notifications as read
    */
   async markAllAsRead(): Promise<{ count: number }> {
-    const result = await this.notificationRepository.update(
-      { read: false },
-      { read: true },
-    );
+    const result = await this.notificationRepository.update({ read: false }, { read: true });
     return { count: result.affected || 0 };
   }
 
@@ -94,4 +91,3 @@ export class NotificationsService {
     await this.notificationRepository.remove(notification);
   }
 }
-

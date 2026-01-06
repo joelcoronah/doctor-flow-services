@@ -68,16 +68,11 @@ export class MedicalRecordsService {
   /**
    * Update a medical record
    */
-  async update(
-    id: string,
-    updateMedicalRecordDto: UpdateMedicalRecordDto,
-  ): Promise<MedicalRecord> {
+  async update(id: string, updateMedicalRecordDto: UpdateMedicalRecordDto): Promise<MedicalRecord> {
     const medicalRecord = await this.findOne(id);
 
     if (updateMedicalRecordDto.date) {
-      updateMedicalRecordDto.date = new Date(
-        updateMedicalRecordDto.date,
-      ).toISOString();
+      updateMedicalRecordDto.date = new Date(updateMedicalRecordDto.date).toISOString();
     }
 
     Object.assign(medicalRecord, updateMedicalRecordDto);
@@ -92,4 +87,3 @@ export class MedicalRecordsService {
     await this.medicalRecordRepository.remove(medicalRecord);
   }
 }
-

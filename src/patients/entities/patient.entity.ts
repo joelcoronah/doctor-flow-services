@@ -45,4 +45,3 @@ export class Patient {
   @OneToMany(() => MedicalRecord, (medicalRecord) => medicalRecord.patient)
   medicalRecords: MedicalRecord[];
 }
-

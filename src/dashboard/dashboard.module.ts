@@ -11,4 +11,3 @@ import { Patient } from '../patients/entities/patient.entity';
   providers: [DashboardService],
 })
 export class DashboardModule {}
-

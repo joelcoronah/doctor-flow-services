@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -20,7 +20,7 @@ export class AppointmentsService {
    */
   async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
     // Verify patient exists
-    const patient = await this.patientsService.findOne(createAppointmentDto.patientId);
+    await this.patientsService.findOne(createAppointmentDto.patientId);
 
     const appointment = this.appointmentRepository.create({
       ...createAppointmentDto,
@@ -40,15 +40,7 @@ export class AppointmentsService {
    * Find all appointments with filters
    */
   async findAll(queryDto: QueryAppointmentDto) {
-    const {
-      date,
-      patientId,
-      status,
-      startDate,
-      endDate,
-      page = 1,
-      limit = 10,
-    } = queryDto;
+    const { date, patientId, status, startDate, endDate, page = 1, limit = 10 } = queryDto;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.appointmentRepository
@@ -180,4 +172,3 @@ export class AppointmentsService {
     await this.appointmentRepository.remove(appointment);
   }
 }
-

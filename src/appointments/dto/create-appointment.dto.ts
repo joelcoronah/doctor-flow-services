@@ -40,4 +40,3 @@ export class CreateAppointmentDto {
   @IsString()
   notes?: string;
 }
-

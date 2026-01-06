@@ -13,4 +13,3 @@ export class CreateNotificationDto {
   @IsEnum(NotificationType)
   type?: NotificationType = NotificationType.INFO;
 }
-

@@ -43,4 +43,3 @@ export class MedicalRecord {
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
 }
-

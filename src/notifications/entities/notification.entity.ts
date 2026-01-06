@@ -1,9 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 
 export enum NotificationType {
   APPOINTMENT = 'appointment',
@@ -36,4 +31,3 @@ export class Notification {
   @CreateDateColumn()
   createdAt: Date;
 }
-

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Patient } from './entities/patient.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
@@ -19,9 +19,7 @@ export class PatientsService {
   async create(createPatientDto: CreatePatientDto): Promise<Patient> {
     const patient = this.patientRepository.create({
       ...createPatientDto,
-      dateOfBirth: createPatientDto.dateOfBirth
-        ? new Date(createPatientDto.dateOfBirth)
-        : null,
+      dateOfBirth: createPatientDto.dateOfBirth ? new Date(createPatientDto.dateOfBirth) : null,
     });
     return await this.patientRepository.save(patient);
   }
@@ -79,9 +77,7 @@ export class PatientsService {
     const patient = await this.findOne(id);
 
     if (updatePatientDto.dateOfBirth) {
-      updatePatientDto.dateOfBirth = new Date(
-        updatePatientDto.dateOfBirth,
-      ).toISOString();
+      updatePatientDto.dateOfBirth = new Date(updatePatientDto.dateOfBirth).toISOString();
     }
 
     Object.assign(patient, updatePatientDto);
@@ -96,4 +92,3 @@ export class PatientsService {
     await this.patientRepository.remove(patient);
   }
 }
-

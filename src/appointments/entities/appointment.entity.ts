@@ -71,4 +71,3 @@ export class Appointment {
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
 }
-

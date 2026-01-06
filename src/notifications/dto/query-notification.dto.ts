@@ -24,4 +24,3 @@ export class QueryNotificationDto {
   @Min(1)
   limit?: number = 10;
 }
-

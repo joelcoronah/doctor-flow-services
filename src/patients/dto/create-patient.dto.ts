@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsDateString,
-  MaxLength,
-} from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsDateString, MaxLength } from 'class-validator';
 
 export class CreatePatientDto {
   @IsString()
@@ -31,4 +25,3 @@ export class CreatePatientDto {
   @IsString()
   notes?: string;
 }
-
