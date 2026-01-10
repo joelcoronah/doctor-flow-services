@@ -24,10 +24,14 @@ export class MedicalRecordsService {
     // Verify patient exists
     await this.patientsService.findOne(patientId);
 
+    // Parse date string as local date without timezone conversion
+    const [year, month, day] = createMedicalRecordDto.date.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day);
+
     const medicalRecord = this.medicalRecordRepository.create({
       ...createMedicalRecordDto,
       patientId,
-      date: new Date(createMedicalRecordDto.date),
+      date: localDate,
       attachments: createMedicalRecordDto.attachments || [],
     });
 
@@ -72,7 +76,10 @@ export class MedicalRecordsService {
     const medicalRecord = await this.findOne(id);
 
     if (updateMedicalRecordDto.date) {
-      updateMedicalRecordDto.date = new Date(updateMedicalRecordDto.date).toISOString();
+      // Parse date string as local date without timezone conversion
+      const [year, month, day] = updateMedicalRecordDto.date.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day);
+      updateMedicalRecordDto.date = localDate.toISOString();
     }
 
     Object.assign(medicalRecord, updateMedicalRecordDto);

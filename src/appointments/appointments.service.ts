@@ -22,9 +22,13 @@ export class AppointmentsService {
     // Verify patient exists
     await this.patientsService.findOne(createAppointmentDto.patientId);
 
+    // Parse date string as local date without timezone conversion
+    const [year, month, day] = createAppointmentDto.date.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day);
+
     const appointment = this.appointmentRepository.create({
       ...createAppointmentDto,
-      date: new Date(createAppointmentDto.date),
+      date: localDate,
     });
 
     const savedAppointment = await this.appointmentRepository.save(appointment);
@@ -151,7 +155,10 @@ export class AppointmentsService {
     const appointment = await this.findOne(id);
 
     if (updateAppointmentDto.date) {
-      updateAppointmentDto.date = new Date(updateAppointmentDto.date).toISOString();
+      // Parse date string as local date without timezone conversion
+      const [year, month, day] = updateAppointmentDto.date.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day);
+      updateAppointmentDto.date = localDate.toISOString();
     }
 
     if (updateAppointmentDto.patientId) {

@@ -17,9 +17,16 @@ export class PatientsService {
    * Create a new patient
    */
   async create(createPatientDto: CreatePatientDto): Promise<Patient> {
+    let dateOfBirth = null;
+    if (createPatientDto.dateOfBirth) {
+      // Parse date string as local date without timezone conversion
+      const [year, month, day] = createPatientDto.dateOfBirth.split('-').map(Number);
+      dateOfBirth = new Date(year, month - 1, day);
+    }
+
     const patient = this.patientRepository.create({
       ...createPatientDto,
-      dateOfBirth: createPatientDto.dateOfBirth ? new Date(createPatientDto.dateOfBirth) : null,
+      dateOfBirth,
     });
     return await this.patientRepository.save(patient);
   }
@@ -77,7 +84,10 @@ export class PatientsService {
     const patient = await this.findOne(id);
 
     if (updatePatientDto.dateOfBirth) {
-      updatePatientDto.dateOfBirth = new Date(updatePatientDto.dateOfBirth).toISOString();
+      // Parse date string as local date without timezone conversion
+      const [year, month, day] = updatePatientDto.dateOfBirth.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day);
+      updatePatientDto.dateOfBirth = localDate.toISOString();
     }
 
     Object.assign(patient, updatePatientDto);
