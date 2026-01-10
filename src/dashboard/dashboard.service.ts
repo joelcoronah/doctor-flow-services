@@ -21,8 +21,8 @@ export class DashboardService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const endOfToday = new Date(today);
+    endOfToday.setHours(23, 59, 59, 999);
 
     const weekStart = new Date(today);
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
@@ -31,10 +31,10 @@ export class DashboardService {
     weekEnd.setDate(weekEnd.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
 
-    // Today's appointments
+    // Today's appointments - using end of today instead of start of tomorrow
     const todayAppointments = await this.appointmentRepository.count({
       where: {
-        date: Between(today, tomorrow),
+        date: Between(today, endOfToday),
       },
     });
 
