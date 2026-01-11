@@ -7,6 +7,7 @@ import { seedNotifications } from './notifications.seeder';
 import { Patient } from '../patients/entities/patient.entity';
 import { Appointment } from '../appointments/entities/appointment.entity';
 import { MedicalRecord } from '../medical-records/entities/medical-record.entity';
+import { MedicalRecordFile } from '../medical-records/entities/medical-record-file.entity';
 import { Notification } from '../notifications/entities/notification.entity';
 
 config();
@@ -19,7 +20,7 @@ async function runSeeders() {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_DATABASE || 'docflow_schedule',
-    entities: [Patient, Appointment, MedicalRecord, Notification],
+    entities: [Patient, Appointment, MedicalRecord, MedicalRecordFile, Notification],
     synchronize: false,
     logging: false,
   });
