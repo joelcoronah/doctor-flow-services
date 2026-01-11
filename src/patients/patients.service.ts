@@ -67,7 +67,7 @@ export class PatientsService {
   async findOne(id: string): Promise<Patient> {
     const patient = await this.patientRepository.findOne({
       where: { id },
-      relations: ['appointments', 'medicalRecords'],
+      relations: ['appointments', 'medicalRecords', 'medicalRecords.files'],
     });
 
     if (!patient) {

@@ -47,6 +47,7 @@ export class MedicalRecordsService {
 
     const records = await this.medicalRecordRepository.find({
       where: { patientId },
+      relations: ['files'],
       order: { date: 'DESC' },
     });
 
@@ -59,7 +60,7 @@ export class MedicalRecordsService {
   async findOne(id: string): Promise<MedicalRecord> {
     const medicalRecord = await this.medicalRecordRepository.findOne({
       where: { id },
-      relations: ['patient'],
+      relations: ['patient', 'files'],
     });
 
     if (!medicalRecord) {

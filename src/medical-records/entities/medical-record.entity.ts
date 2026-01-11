@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { Patient } from '../../patients/entities/patient.entity';
+import { MedicalRecordFile } from './medical-record-file.entity';
 
 @Entity('medical_records')
 export class MedicalRecord {
@@ -42,4 +44,9 @@ export class MedicalRecord {
   @ManyToOne(() => Patient, (patient) => patient.medicalRecords)
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @OneToMany(() => MedicalRecordFile, (file) => file.medicalRecord, {
+    cascade: true,
+  })
+  files: MedicalRecordFile[];
 }
