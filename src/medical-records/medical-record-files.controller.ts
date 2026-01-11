@@ -48,7 +48,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-@Controller('api/medical-records/:medicalRecordId/files')
+@Controller('medical-records/:medicalRecordId/files')
 @UseGuards(JwtAuthGuard) // All routes require authentication
 export class MedicalRecordFilesController {
   constructor(

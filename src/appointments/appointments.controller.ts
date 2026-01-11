@@ -19,7 +19,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 
-@Controller('api/appointments')
+@Controller('appointments')
 @UseGuards(JwtAuthGuard) // All routes require authentication
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
