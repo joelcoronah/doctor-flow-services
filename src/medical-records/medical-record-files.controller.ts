@@ -11,10 +11,14 @@ import {
   UploadedFiles,
   Res,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { MedicalRecordFilesService } from './medical-record-files.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { User } from '../users/entities/user.entity';
 
 // File validation
 const fileFilter = (req, file, cb) => {
@@ -44,7 +48,8 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-@Controller('medical-records/:medicalRecordId/files')
+@Controller('api/medical-records/:medicalRecordId/files')
+@UseGuards(JwtAuthGuard) // All routes require authentication
 export class MedicalRecordFilesController {
   constructor(
     private readonly filesService: MedicalRecordFilesService,
@@ -60,8 +65,9 @@ export class MedicalRecordFilesController {
   async uploadFile(
     @Param('medicalRecordId') medicalRecordId: string,
     @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: User,
   ) {
-    return await this.filesService.uploadFile(medicalRecordId, file);
+    return await this.filesService.uploadFile(medicalRecordId, file, user.id);
   }
 
   @Post('upload-multiple')
@@ -75,24 +81,29 @@ export class MedicalRecordFilesController {
   async uploadMultipleFiles(
     @Param('medicalRecordId') medicalRecordId: string,
     @UploadedFiles() files: Express.Multer.File[],
+    @CurrentUser() user: User,
   ) {
     const uploadedFiles = await Promise.all(
-      files.map((file) => this.filesService.uploadFile(medicalRecordId, file)),
+      files.map((file) => this.filesService.uploadFile(medicalRecordId, file, user.id)),
     );
     return uploadedFiles;
   }
 
   @Get()
-  async getFiles(@Param('medicalRecordId') medicalRecordId: string) {
-    return await this.filesService.getFilesByMedicalRecord(medicalRecordId);
+  async getFiles(
+    @Param('medicalRecordId') medicalRecordId: string,
+    @CurrentUser() user: User,
+  ) {
+    return await this.filesService.getFilesByMedicalRecord(medicalRecordId, user.id);
   }
 
   @Get('file/:fileId')
   async downloadFile(
     @Param('fileId') fileId: string,
     @Res() res: Response,
+    @CurrentUser() user: User,
   ) {
-    const { buffer, file } = await this.filesService.getFileBuffer(fileId);
+    const { buffer, file } = await this.filesService.getFileBuffer(fileId, user.id);
 
     res.set({
       'Content-Type': file.mimeType,
@@ -104,8 +115,8 @@ export class MedicalRecordFilesController {
   }
 
   @Delete('file/:fileId')
-  async deleteFile(@Param('fileId') fileId: string) {
-    await this.filesService.deleteFile(fileId);
+  async deleteFile(@Param('fileId') fileId: string, @CurrentUser() user: User) {
+    await this.filesService.deleteFile(fileId, user.id);
     return { message: 'File deleted successfully' };
   }
 
@@ -113,7 +124,8 @@ export class MedicalRecordFilesController {
   async renameFile(
     @Param('fileId') fileId: string,
     @Body('newName') newName: string,
+    @CurrentUser() user: User,
   ) {
-    return await this.filesService.renameFile(fileId, newName);
+    return await this.filesService.renameFile(fileId, newName, user.id);
   }
 }

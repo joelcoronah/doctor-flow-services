@@ -14,9 +14,9 @@ export class PatientsService {
   ) {}
 
   /**
-   * Create a new patient
+   * Create a new patient (multi-tenant - filtered by doctorId)
    */
-  async create(createPatientDto: CreatePatientDto): Promise<Patient> {
+  async create(createPatientDto: CreatePatientDto, doctorId: string): Promise<Patient> {
     let dateOfBirth = null;
     if (createPatientDto.dateOfBirth) {
       // Parse date string as local date without timezone conversion
@@ -27,21 +27,25 @@ export class PatientsService {
     const patient = this.patientRepository.create({
       ...createPatientDto,
       dateOfBirth,
+      doctorId, // Set the current doctor's ID
     });
     return await this.patientRepository.save(patient);
   }
 
   /**
-   * Find all patients with pagination and search
+   * Find all patients with pagination and search (multi-tenant - filtered by doctorId)
    */
-  async findAll(queryDto: QueryPatientDto) {
+  async findAll(queryDto: QueryPatientDto, doctorId: string) {
     const { search, page = 1, limit = 10 } = queryDto;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.patientRepository.createQueryBuilder('patient');
 
+    // Filter by doctor (multi-tenant)
+    queryBuilder.where('patient.doctorId = :doctorId', { doctorId });
+
     if (search) {
-      queryBuilder.where(
+      queryBuilder.andWhere(
         '(patient.name ILIKE :search OR patient.email ILIKE :search OR patient.phone ILIKE :search)',
         { search: `%${search}%` },
       );
@@ -62,11 +66,11 @@ export class PatientsService {
   }
 
   /**
-   * Find a patient by ID
+   * Find a patient by ID (multi-tenant - filtered by doctorId)
    */
-  async findOne(id: string): Promise<Patient> {
+  async findOne(id: string, doctorId: string): Promise<Patient> {
     const patient = await this.patientRepository.findOne({
-      where: { id },
+      where: { id, doctorId }, // Ensure patient belongs to this doctor
       relations: ['appointments', 'medicalRecords', 'medicalRecords.files'],
     });
 
@@ -78,10 +82,10 @@ export class PatientsService {
   }
 
   /**
-   * Update a patient
+   * Update a patient (multi-tenant - filtered by doctorId)
    */
-  async update(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient> {
-    const patient = await this.findOne(id);
+  async update(id: string, updatePatientDto: UpdatePatientDto, doctorId: string): Promise<Patient> {
+    const patient = await this.findOne(id, doctorId); // Verify ownership
 
     if (updatePatientDto.dateOfBirth) {
       // Parse date string as local date without timezone conversion
@@ -95,10 +99,10 @@ export class PatientsService {
   }
 
   /**
-   * Delete a patient
+   * Delete a patient (multi-tenant - filtered by doctorId)
    */
-  async remove(id: string): Promise<void> {
-    const patient = await this.findOne(id);
+  async remove(id: string, doctorId: string): Promise<void> {
+    const patient = await this.findOne(id, doctorId); // Verify ownership
     await this.patientRepository.remove(patient);
   }
 }

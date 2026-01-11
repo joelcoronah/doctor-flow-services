@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Patient } from '../../patients/entities/patient.entity';
 import { MedicalRecordFile } from './medical-record-file.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('medical_records')
 export class MedicalRecord {
@@ -18,6 +19,9 @@ export class MedicalRecord {
 
   @Column({ type: 'uuid' })
   patientId: string;
+
+  @Column({ type: 'uuid' })
+  doctorId: string;
 
   @Column({ type: 'date' })
   date: Date;
@@ -44,6 +48,10 @@ export class MedicalRecord {
   @ManyToOne(() => Patient, (patient) => patient.medicalRecords)
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'doctorId' })
+  doctor: User;
 
   @OneToMany(() => MedicalRecordFile, (file) => file.medicalRecord, {
     cascade: true,

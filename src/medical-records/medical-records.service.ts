@@ -15,14 +15,15 @@ export class MedicalRecordsService {
   ) {}
 
   /**
-   * Create a new medical record for a patient
+   * Create a new medical record for a patient (multi-tenant - filtered by doctorId)
    */
   async create(
     patientId: string,
     createMedicalRecordDto: CreateMedicalRecordDto,
+    doctorId: string,
   ): Promise<MedicalRecord> {
-    // Verify patient exists
-    await this.patientsService.findOne(patientId);
+    // Verify patient exists and belongs to this doctor
+    await this.patientsService.findOne(patientId, doctorId);
 
     // Parse date string as local date without timezone conversion
     const [year, month, day] = createMedicalRecordDto.date.split('-').map(Number);
@@ -31,6 +32,7 @@ export class MedicalRecordsService {
     const medicalRecord = this.medicalRecordRepository.create({
       ...createMedicalRecordDto,
       patientId,
+      doctorId, // Set the current doctor's ID
       date: localDate,
       attachments: createMedicalRecordDto.attachments || [],
     });
@@ -39,14 +41,14 @@ export class MedicalRecordsService {
   }
 
   /**
-   * Find all medical records for a patient
+   * Find all medical records for a patient (multi-tenant - filtered by doctorId)
    */
-  async findByPatient(patientId: string): Promise<{ data: MedicalRecord[] }> {
-    // Verify patient exists
-    await this.patientsService.findOne(patientId);
+  async findByPatient(patientId: string, doctorId: string): Promise<{ data: MedicalRecord[] }> {
+    // Verify patient exists and belongs to this doctor
+    await this.patientsService.findOne(patientId, doctorId);
 
     const records = await this.medicalRecordRepository.find({
-      where: { patientId },
+      where: { patientId, doctorId }, // Filter by doctor
       relations: ['files'],
       order: { date: 'DESC' },
     });
@@ -55,11 +57,11 @@ export class MedicalRecordsService {
   }
 
   /**
-   * Find a medical record by ID
+   * Find a medical record by ID (multi-tenant - filtered by doctorId)
    */
-  async findOne(id: string): Promise<MedicalRecord> {
+  async findOne(id: string, doctorId: string): Promise<MedicalRecord> {
     const medicalRecord = await this.medicalRecordRepository.findOne({
-      where: { id },
+      where: { id, doctorId }, // Ensure record belongs to this doctor
       relations: ['patient', 'files'],
     });
 
@@ -71,10 +73,10 @@ export class MedicalRecordsService {
   }
 
   /**
-   * Update a medical record
+   * Update a medical record (multi-tenant - filtered by doctorId)
    */
-  async update(id: string, updateMedicalRecordDto: UpdateMedicalRecordDto): Promise<MedicalRecord> {
-    const medicalRecord = await this.findOne(id);
+  async update(id: string, updateMedicalRecordDto: UpdateMedicalRecordDto, doctorId: string): Promise<MedicalRecord> {
+    const medicalRecord = await this.findOne(id, doctorId); // Verify ownership
 
     if (updateMedicalRecordDto.date) {
       // Parse date string as local date without timezone conversion
@@ -88,10 +90,10 @@ export class MedicalRecordsService {
   }
 
   /**
-   * Delete a medical record
+   * Delete a medical record (multi-tenant - filtered by doctorId)
    */
-  async remove(id: string): Promise<void> {
-    const medicalRecord = await this.findOne(id);
+  async remove(id: string, doctorId: string): Promise<void> {
+    const medicalRecord = await this.findOne(id, doctorId); // Verify ownership
     await this.medicalRecordRepository.remove(medicalRecord);
   }
 }

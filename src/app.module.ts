@@ -6,11 +6,14 @@ import { AppointmentsModule } from './appointments/appointments.module';
 import { MedicalRecordsModule } from './medical-records/medical-records.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 import { Patient } from './patients/entities/patient.entity';
 import { Appointment } from './appointments/entities/appointment.entity';
 import { MedicalRecord } from './medical-records/entities/medical-record.entity';
 import { MedicalRecordFile } from './medical-records/entities/medical-record-file.entity';
 import { Notification } from './notifications/entities/notification.entity';
+import { User } from './users/entities/user.entity';
 
 @Module({
   imports: [
@@ -27,11 +30,13 @@ import { Notification } from './notifications/entities/notification.entity';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'docflow_schedule',
-      entities: [Patient, Appointment, MedicalRecord, MedicalRecordFile, Notification],
+      entities: [User, Patient, Appointment, MedicalRecord, MedicalRecordFile, Notification],
       synchronize: process.env.NODE_ENV === 'development', // Only in development
       logging: process.env.NODE_ENV === 'development',
     }),
     // Feature modules
+    AuthModule,
+    UsersModule,
     PatientsModule,
     AppointmentsModule,
     MedicalRecordsModule,

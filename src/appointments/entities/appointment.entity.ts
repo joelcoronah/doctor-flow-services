@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Patient } from '../../patients/entities/patient.entity';
+import { User } from '../../users/entities/user.entity';
 
 export enum AppointmentType {
   CHECKUP = 'checkup',
@@ -33,6 +34,9 @@ export class Appointment {
 
   @Column({ type: 'uuid' })
   patientId: string;
+
+  @Column({ type: 'uuid' })
+  doctorId: string;
 
   @Column({ type: 'date' })
   date: Date;
@@ -70,4 +74,8 @@ export class Appointment {
   @ManyToOne(() => Patient, (patient) => patient.appointments)
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
+
+  @ManyToOne(() => User, (user) => user.appointments)
+  @JoinColumn({ name: 'doctorId' })
+  doctor: User;
 }

@@ -1,10 +1,22 @@
 import { DataSource } from 'typeorm';
 import { MedicalRecord } from '../medical-records/entities/medical-record.entity';
 import { Patient } from '../patients/entities/patient.entity';
+import { User } from '../users/entities/user.entity';
 
 export async function seedMedicalRecords(dataSource: DataSource): Promise<void> {
   const medicalRecordRepository = dataSource.getRepository(MedicalRecord);
   const patientRepository = dataSource.getRepository(Patient);
+  const userRepository = dataSource.getRepository(User);
+
+  // Get default doctor/admin user for medical records
+  const defaultDoctor = await userRepository.findOne({
+    where: { email: 'admin@docflow.com' }
+  });
+  
+  if (!defaultDoctor) {
+    console.log('⚠ No default doctor found. Please run migration first.');
+    return;
+  }
 
   // Get all patients
   const patients = await patientRepository.find();
@@ -119,6 +131,7 @@ export async function seedMedicalRecords(dataSource: DataSource): Promise<void> 
       const medicalRecord = medicalRecordRepository.create({
         ...recordData,
         patientId: patient.id,
+        doctorId: defaultDoctor.id, // Assign to default doctor
       });
       await medicalRecordRepository.save(medicalRecord);
       console.log(`✓ Seeded medical record for ${patient.name} dated ${recordData.date.toISOString().split('T')[0]}`);

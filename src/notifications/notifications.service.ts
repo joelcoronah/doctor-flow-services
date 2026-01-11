@@ -13,21 +13,27 @@ export class NotificationsService {
   ) {}
 
   /**
-   * Create a new notification
+   * Create a new notification (multi-tenant - filtered by doctorId)
    */
-  async create(createNotificationDto: CreateNotificationDto): Promise<Notification> {
-    const notification = this.notificationRepository.create(createNotificationDto);
+  async create(createNotificationDto: CreateNotificationDto, doctorId: string): Promise<Notification> {
+    const notification = this.notificationRepository.create({
+      ...createNotificationDto,
+      doctorId, // Set the current doctor's ID
+    });
     return await this.notificationRepository.save(notification);
   }
 
   /**
-   * Find all notifications with filters
+   * Find all notifications with filters (multi-tenant - filtered by doctorId)
    */
-  async findAll(queryDto: QueryNotificationDto) {
+  async findAll(queryDto: QueryNotificationDto, doctorId: string) {
     const { read, type, page = 1, limit = 10 } = queryDto;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.notificationRepository.createQueryBuilder('notification');
+
+    // Filter by doctor (multi-tenant)
+    queryBuilder.where('notification.doctorId = :doctorId', { doctorId });
 
     if (read !== undefined) {
       queryBuilder.andWhere('notification.read = :read', { read });
@@ -52,11 +58,11 @@ export class NotificationsService {
   }
 
   /**
-   * Find a notification by ID
+   * Find a notification by ID (multi-tenant - filtered by doctorId)
    */
-  async findOne(id: string): Promise<Notification> {
+  async findOne(id: string, doctorId: string): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({
-      where: { id },
+      where: { id, doctorId }, // Ensure notification belongs to this doctor
     });
 
     if (!notification) {
@@ -67,27 +73,30 @@ export class NotificationsService {
   }
 
   /**
-   * Mark notification as read
+   * Mark notification as read (multi-tenant - filtered by doctorId)
    */
-  async markAsRead(id: string): Promise<Notification> {
-    const notification = await this.findOne(id);
+  async markAsRead(id: string, doctorId: string): Promise<Notification> {
+    const notification = await this.findOne(id, doctorId); // Verify ownership
     notification.read = true;
     return await this.notificationRepository.save(notification);
   }
 
   /**
-   * Mark all notifications as read
+   * Mark all notifications as read (multi-tenant - filtered by doctorId)
    */
-  async markAllAsRead(): Promise<{ count: number }> {
-    const result = await this.notificationRepository.update({ read: false }, { read: true });
+  async markAllAsRead(doctorId: string): Promise<{ count: number }> {
+    const result = await this.notificationRepository.update(
+      { doctorId, read: false }, // Only this doctor's unread notifications
+      { read: true },
+    );
     return { count: result.affected || 0 };
   }
 
   /**
-   * Delete a notification
+   * Delete a notification (multi-tenant - filtered by doctorId)
    */
-  async remove(id: string): Promise<void> {
-    const notification = await this.findOne(id);
+  async remove(id: string, doctorId: string): Promise<void> {
+    const notification = await this.findOne(id, doctorId); // Verify ownership
     await this.notificationRepository.remove(notification);
   }
 }

@@ -16,11 +16,11 @@ export class AppointmentsService {
   ) {}
 
   /**
-   * Create a new appointment
+   * Create a new appointment (multi-tenant - filtered by doctorId)
    */
-  async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
-    // Verify patient exists
-    await this.patientsService.findOne(createAppointmentDto.patientId);
+  async create(createAppointmentDto: CreateAppointmentDto, doctorId: string): Promise<Appointment> {
+    // Verify patient exists and belongs to this doctor
+    await this.patientsService.findOne(createAppointmentDto.patientId, doctorId);
 
     // Parse date string as local date without timezone conversion
     const [year, month, day] = createAppointmentDto.date.split('-').map(Number);
@@ -29,6 +29,7 @@ export class AppointmentsService {
     const appointment = this.appointmentRepository.create({
       ...createAppointmentDto,
       date: localDate,
+      doctorId, // Set the current doctor's ID
     });
 
     const savedAppointment = await this.appointmentRepository.save(appointment);
@@ -41,15 +42,16 @@ export class AppointmentsService {
   }
 
   /**
-   * Find all appointments with filters
+   * Find all appointments with filters (multi-tenant - filtered by doctorId)
    */
-  async findAll(queryDto: QueryAppointmentDto) {
+  async findAll(queryDto: QueryAppointmentDto, doctorId: string) {
     const { date, patientId, status, startDate, endDate, page = 1, limit = 10 } = queryDto;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.appointmentRepository
       .createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.patient', 'patient');
+      .leftJoinAndSelect('appointment.patient', 'patient')
+      .where('appointment.doctorId = :doctorId', { doctorId }); // Filter by doctor
 
     if (date) {
       queryBuilder.andWhere('appointment.date = :date', {
@@ -94,11 +96,11 @@ export class AppointmentsService {
   }
 
   /**
-   * Find appointment by ID
+   * Find appointment by ID (multi-tenant - filtered by doctorId)
    */
-  async findOne(id: string): Promise<Appointment> {
+  async findOne(id: string, doctorId: string): Promise<Appointment> {
     const appointment = await this.appointmentRepository.findOne({
-      where: { id },
+      where: { id, doctorId }, // Ensure appointment belongs to this doctor
       relations: ['patient'],
     });
 
@@ -113,11 +115,14 @@ export class AppointmentsService {
   }
 
   /**
-   * Find appointments by patient ID
+   * Find appointments by patient ID (multi-tenant - filtered by doctorId)
    */
-  async findByPatient(patientId: string) {
+  async findByPatient(patientId: string, doctorId: string) {
+    // Verify patient belongs to this doctor
+    await this.patientsService.findOne(patientId, doctorId);
+
     const appointments = await this.appointmentRepository.find({
-      where: { patientId },
+      where: { patientId, doctorId },
       relations: ['patient'],
       order: { date: 'ASC', time: 'ASC' },
     });
@@ -131,11 +136,11 @@ export class AppointmentsService {
   }
 
   /**
-   * Find appointments by date
+   * Find appointments by date (multi-tenant - filtered by doctorId)
    */
-  async findByDate(date: string) {
+  async findByDate(date: string, doctorId: string) {
     const appointments = await this.appointmentRepository.find({
-      where: { date: new Date(date) },
+      where: { date: new Date(date), doctorId },
       relations: ['patient'],
       order: { time: 'ASC' },
     });
@@ -149,10 +154,10 @@ export class AppointmentsService {
   }
 
   /**
-   * Update an appointment
+   * Update an appointment (multi-tenant - filtered by doctorId)
    */
-  async update(id: string, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
-    const appointment = await this.findOne(id);
+  async update(id: string, updateAppointmentDto: UpdateAppointmentDto, doctorId: string): Promise<Appointment> {
+    const appointment = await this.findOne(id, doctorId); // Verify ownership
 
     if (updateAppointmentDto.date) {
       // Parse date string as local date without timezone conversion
@@ -162,20 +167,21 @@ export class AppointmentsService {
     }
 
     if (updateAppointmentDto.patientId) {
-      await this.patientsService.findOne(updateAppointmentDto.patientId);
+      // Verify new patient belongs to this doctor
+      await this.patientsService.findOne(updateAppointmentDto.patientId, doctorId);
     }
 
     Object.assign(appointment, updateAppointmentDto);
     const updated = await this.appointmentRepository.save(appointment);
 
-    return await this.findOne(updated.id);
+    return await this.findOne(updated.id, doctorId);
   }
 
   /**
-   * Delete an appointment
+   * Delete an appointment (multi-tenant - filtered by doctorId)
    */
-  async remove(id: string): Promise<void> {
-    const appointment = await this.findOne(id);
+  async remove(id: string, doctorId: string): Promise<void> {
+    const appointment = await this.findOne(id, doctorId); // Verify ownership
     await this.appointmentRepository.remove(appointment);
   }
 }

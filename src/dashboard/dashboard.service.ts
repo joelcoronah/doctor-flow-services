@@ -15,9 +15,9 @@ export class DashboardService {
   ) {}
 
   /**
-   * Get dashboard statistics
+   * Get dashboard statistics (multi-tenant - filtered by doctorId)
    */
-  async getStats() {
+  async getStats(doctorId: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -31,31 +31,37 @@ export class DashboardService {
     weekEnd.setDate(weekEnd.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
 
-    // Today's appointments - using end of today instead of start of tomorrow
+    // Today's appointments - filtered by doctor
     const todayAppointments = await this.appointmentRepository.count({
       where: {
+        doctorId, // Filter by current doctor
         date: Between(today, endOfToday),
       },
     });
 
-    // This week's appointments
+    // This week's appointments - filtered by doctor
     const weekAppointments = await this.appointmentRepository.count({
       where: {
+        doctorId, // Filter by current doctor
         date: Between(weekStart, weekEnd),
       },
     });
 
-    // Total patients
-    const totalPatients = await this.patientRepository.count();
+    // Total patients for this doctor
+    const totalPatients = await this.patientRepository.count({
+      where: { doctorId }, // Filter by current doctor
+    });
 
-    // Pending follow-ups (appointments with status 'scheduled' or 'confirmed' in the future)
+    // Pending follow-ups - filtered by doctor
     const pendingFollowUps = await this.appointmentRepository.count({
       where: [
         {
+          doctorId, // Filter by current doctor
           status: AppointmentStatus.SCHEDULED,
           date: Between(today, new Date('2099-12-31')),
         },
         {
+          doctorId, // Filter by current doctor
           status: AppointmentStatus.CONFIRMED,
           date: Between(today, new Date('2099-12-31')),
         },

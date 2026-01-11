@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
+import { User } from '../users/entities/user.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { Appointment } from '../appointments/entities/appointment.entity';
 import { MedicalRecord } from '../medical-records/entities/medical-record.entity';
@@ -15,7 +16,7 @@ export default new DataSource({
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_DATABASE || 'docflow_schedule',
-  entities: [Patient, Appointment, MedicalRecord, MedicalRecordFile, Notification],
+  entities: [User, Patient, Appointment, MedicalRecord, MedicalRecordFile, Notification],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,
   logging: true,

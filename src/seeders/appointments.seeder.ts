@@ -1,10 +1,22 @@
 import { DataSource } from 'typeorm';
 import { Appointment, AppointmentType, AppointmentStatus } from '../appointments/entities/appointment.entity';
 import { Patient } from '../patients/entities/patient.entity';
+import { User } from '../users/entities/user.entity';
 
 export async function seedAppointments(dataSource: DataSource): Promise<void> {
   const appointmentRepository = dataSource.getRepository(Appointment);
   const patientRepository = dataSource.getRepository(Patient);
+  const userRepository = dataSource.getRepository(User);
+
+  // Get default doctor/admin user for appointments
+  const defaultDoctor = await userRepository.findOne({
+    where: { email: 'admin@docflow.com' }
+  });
+  
+  if (!defaultDoctor) {
+    console.log('⚠ No default doctor found. Please run migration first.');
+    return;
+  }
 
   // Get all patients
   const patients = await patientRepository.find();
@@ -147,6 +159,7 @@ export async function seedAppointments(dataSource: DataSource): Promise<void> {
       const appointment = appointmentRepository.create({
         ...appointmentData,
         patientId: patient.id,
+        doctorId: defaultDoctor.id, // Assign to default doctor
       });
       await appointmentRepository.save(appointment);
       console.log(`✓ Seeded appointment for ${patient.name} on ${appointmentData.date.toISOString().split('T')[0]}`);

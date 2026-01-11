@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 export enum NotificationType {
   APPOINTMENT = 'appointment',
@@ -27,6 +35,14 @@ export class Notification {
 
   @Column({ type: 'boolean', default: false })
   read: boolean;
+
+  // Doctor/User relationship (multi-tenant)
+  @Column({ type: 'uuid', nullable: true })
+  doctorId: string;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'doctorId' })
+  doctor: User;
 
   @CreateDateColumn()
   createdAt: Date;
