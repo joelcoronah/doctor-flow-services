@@ -1,8 +1,17 @@
 import { DataSource } from 'typeorm';
 import { Patient } from '../patients/entities/patient.entity';
+import { User } from '../users/entities/user.entity';
 
-export async function seedPatients(dataSource: DataSource): Promise<void> {
+export async function seedPatients(dataSource: DataSource, users: User[]): Promise<void> {
   const patientRepository = dataSource.getRepository(Patient);
+
+  // Use first user as doctor for all seeded patients (required for doctorId)
+  const doctor = users[0];
+  console.log('🔍 Doctor:', doctor);
+  if (!doctor) {
+    console.log('⏭️  No users found, skipping patients seeder (need at least one doctor)');
+    return;
+  }
 
   const patients = [
     {
@@ -93,7 +102,7 @@ export async function seedPatients(dataSource: DataSource): Promise<void> {
     });
 
     if (!existingPatient) {
-      const patient = patientRepository.create(patientData);
+      const patient = patientRepository.create({ ...patientData, doctorId: doctor.id });
       await patientRepository.save(patient);
       console.log(`✓ Seeded patient: ${patientData.name}`);
     } else {
@@ -101,4 +110,3 @@ export async function seedPatients(dataSource: DataSource): Promise<void> {
     }
   }
 }
-

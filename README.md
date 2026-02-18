@@ -39,7 +39,8 @@ npm run start:prod       # Start production server
 npm run build           # Build for production
 npm run test            # Run tests
 npm run migration:generate  # Generate new migration
-npm run migration:run      # Run migrations
+npm run migration:run      # Run migrations (local, uses ts-node)
+npm run migration:run:prod # Run migrations in Docker/production (uses compiled dist)
 npm run migration:revert   # Revert last migration
 npm run seed            # Seed database
 ```

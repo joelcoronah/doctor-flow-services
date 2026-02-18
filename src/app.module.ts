@@ -22,14 +22,14 @@ import { User } from './users/entities/user.entity';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // Database configuration
+    // Database configuration (env from container in Docker, or .env locally)
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT, 10) || 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_DATABASE || 'docflow_schedule',
+      host: process.env.DB_HOST ?? 'localhost',
+      port: Number(process.env.DB_PORT) || 5432,
+      username: process.env.DB_USERNAME ?? 'postgres',
+      password: process.env.DB_PASSWORD ?? 'postgres',
+      database: process.env.DB_DATABASE ?? 'docflow_schedule',
       entities: [User, Patient, Appointment, MedicalRecord, MedicalRecordFile, Notification],
       synchronize: process.env.NODE_ENV === 'development', // Only in development
       logging: process.env.NODE_ENV === 'development',

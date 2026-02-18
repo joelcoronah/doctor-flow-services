@@ -12,16 +12,18 @@ import { MedicalRecord } from '../medical-records/entities/medical-record.entity
 import { MedicalRecordFile } from '../medical-records/entities/medical-record-file.entity';
 import { Notification } from '../notifications/entities/notification.entity';
 
-config();
+config({ path: '.env', override: false });
 
 async function runSeeders() {
+  const port = Number(process.env.DB_PORT) || 5432;
+
   const dataSource = new DataSource({
     type: 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT, 10) || 5432,
-    username: process.env.DB_USERNAME || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    database: process.env.DB_DATABASE || 'docflow_schedule',
+    host: process.env.DB_HOST ?? 'localhost',
+    port: Number.isNaN(port) ? 5432 : port,
+    username: process.env.DB_USERNAME ?? 'postgres',
+    password: process.env.DB_PASSWORD ?? 'postgres',
+    database: process.env.DB_DATABASE ?? 'docflow_schedule',
     entities: [User, Patient, Appointment, MedicalRecord, MedicalRecordFile, Notification],
     synchronize: false,
     logging: false,
@@ -45,7 +47,7 @@ async function runSeeders() {
 
     // Seed patients (will be assigned to default admin from migration)
     console.log('📋 Seeding patients...');
-    await seedPatients(dataSource);
+    await seedPatients(dataSource, users);
     console.log('');
 
     // Then appointments and medical records
