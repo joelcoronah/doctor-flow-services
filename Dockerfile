@@ -1,5 +1,7 @@
 # DocFlow Backend - NestJS API
 # Multi-stage build for smaller production image
+# syntax=docker/dockerfile:1
+# Use BuildKit for cache mounts: DOCKER_BUILDKIT=1 (default in Docker 23+)
 
 # ---- Base ----
 FROM node:20-alpine AS base
@@ -8,8 +10,10 @@ WORKDIR /app
 # ---- Dependencies ----
 FROM base AS deps
 COPY package*.json ./
-# Install all deps (including devDependencies for build). Use npm install so build works if lock file is out of sync.
-RUN npm install
+# Cache npm store between builds so installs are fast after the first run.
+# Use npm ci for speed and reproducibility when package-lock.json is present.
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 # ---- Build ----
 FROM base AS build
